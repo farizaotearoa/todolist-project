@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	"github.com/rs/cors"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
@@ -36,6 +37,12 @@ func main() {
 	router.HandleFunc("/todo/update/{id}", UpdateTask).Methods("PUT")
 	router.HandleFunc("/todo/delete/{id}", DeleteTask).Methods("DELETE")
 	http.ListenAndServe(":8080", router)
+
+	handler := cors.New(cors.Options{
+		AllowedMethods: []string{"GET", "POST", "DELETE"},
+	}).Handler(router)
+
+	http.ListenAndServe(":8000", handler)
 }
 
 func init() {
