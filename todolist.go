@@ -4,23 +4,28 @@ import (
 	"io"
 	"net/http"
 
-	_ "github.com/go-sql-driver/mysql"
 	"github.com/gorilla/mux"
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/mysql"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
-var db, _ = gorm.Open("mysql", "root:root@/todolist?charset=utf8&parseTime=True&loc=Local")
+var dsn = "root:password@tcp(0.0.0.0:3306)/todolist?charset=utf8&parseTime=True&loc=Local"
+var db, _ = gorm.Open(mysql.Open(dsn), &gorm.Config{})
+
+type TodoItemModel struct {
+	Id     int `gorm:"primary_key"`
+	Task   string
+	Finish bool
+}
 
 func main() {
-	defer db.Close()
+	db.Debug().AutoMigrate(&TodoItemModel{})
 
 	log.Info("Starting To do list API Server")
 	router := mux.NewRouter()
 	router.HandleFunc("/healthz", Healthz).Methods("GET")
 	http.ListenAndServe(":8080", router)
-
 }
 
 func init() {
